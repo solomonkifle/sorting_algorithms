@@ -1,60 +1,93 @@
 #include "sort.h"
+#define parent(x) (((x) - 1) / 2)
+#define leftchild(x) (((x) * 2) + 1)
 
 /**
- * heap_sort - sorts an array following the Heap sort algorithm
- * @array: array of ints to sort
- * @size: size of the array to sort
+ * swap - swaps 2 int values
+ * @array: the integer array to sort
+ * @size: the size of the array
+ * @a: address of first value
+ * @b: address of second value
+ *
+ * Return: void
  */
-void heap_sort(int *array, size_t size)
+void swap(int *array, size_t size, int *a, int *b)
 {
-	int i;
-	int tmp;
-
-	if (size < 2)
-		return;
-
-	for (i = size / 2 - 1; i >= 0; i--)
-		heapify(array, size, (size_t)i, size);
-
-	for (i = size - 1; i >= 0; i--)
+	if (*a != *b)
 	{
-		tmp = array[i];
-		array[i] = array[0];
-		array[0] = tmp;
-		if (i != 0)
-			print_array(array, size);
-		heapify(array, (size_t)i, 0, size);
+		*a = *a + *b;
+		*b = *a - *b;
+		*a = *a - *b;
+	}
+	print_array((const int *)array, size);
+}
+
+/**
+*siftdown - siftdown implementation
+*
+*@array: array to be sorted
+*@start: start of array
+*@end: end of array
+*@size: size of array
+*
+*/
+void siftdown(int *array, size_t start, size_t end, size_t size)
+{
+	size_t root = start, _swap, child;
+
+	while (leftchild(root) <= end)
+	{
+		child = leftchild(root);
+		_swap = root;
+		if (array[_swap] < array[child])
+			_swap = child;
+		if (child + 1 <= end &&
+			array[_swap] < array[child + 1])
+			_swap = child + 1;
+		if (_swap == root)
+			return;
+		swap(array, size, &array[root], &array[_swap]);
+		root = _swap;
 	}
 }
 
 /**
- * heapify - turns an array in a heap tree
- * @array: array to turn into heap
- * @s: size of the subtree
- * @root: index of the subtree in the heap
- * @size: size of the whole array
- */
-void heapify(int *array, size_t s, size_t root, size_t size)
+*heapify - makes heap in-place
+*
+*@array: array to be sorted
+*@size: size of array
+*
+*/
+void heapify(int *array, size_t size)
 {
-	size_t max, left, right;
-	int tmp;
+	ssize_t start;
 
-	max = root;
-	left = (root * 2) + 1;
-	right = (root * 2) + 2;
-
-	if (left < s && array[left] > array[max])
-		max = left;
-
-	if (right < s && array[right] > array[max])
-		max = right;
-
-	if (max != root)
+	start = parent(size - 1);
+	while (start >= 0)
 	{
-		tmp = array[root];
-		array[root] = array[max];
-		array[max] = tmp;
-		print_array(array, size);
-		heapify(array, s, max, size);
+		siftdown(array, start, size - 1, size);
+		start--;
+	}
+}
+/**
+*heap_sort - heap sort algorithm
+*
+*@array: array to sort
+*@size: size of array
+*
+*/
+void heap_sort(int *array, size_t size)
+{
+	size_t end;
+
+	if (!array || size < 2)
+		return;
+	heapify(array, size);
+	end = size - 1;
+	while (end > 0)
+	{
+		swap(array, size, &array[end], &array[0]);
+		end--;
+		siftdown(array, 0, end, size);
 	}
 }
